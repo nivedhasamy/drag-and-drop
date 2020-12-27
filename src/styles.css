@@ -1,0 +1,82 @@
+body {
+  font-family: "Roboto", sans-serif;
+  color: #333;
+}
+
+input,
+textarea,
+select {
+  font-size: 1.2rem;
+  margin: 0 auto;
+  padding: 0.5rem;
+  border-radius: 0.2rem;
+  background-color: rgb(255, 255, 255);
+  border: none;
+  width: 90%;
+  display: block;
+}
+
+button {
+  border: none;
+  background: #404040;
+  color: #ffffff;
+  font-weight: 100;
+  padding: 10px;
+  text-transform: uppercase;
+  border-radius: 0.2rem !important;
+  display: inline-block;
+}
+
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.gui-container {
+  display: flex;
+  flex-direction: row;
+  height: 80vh;
+  border-bottom: 2px solid gray;
+  border-top: 2px solid gray;
+}
+
+.elements-container {
+  flex: 10%;
+  border-right: 2px solid gray;
+  cursor: grab;
+}
+
+.elements-container h5 {
+  border: 1px solid gray;
+
+  border-radius: 0.2rem;
+  padding: 10px;
+  margin: 10px;
+}
+.drag-n-drop-container {
+  flex: 90%;
+}
+
+.clear {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drop-container {
+  border: 1px dashed gray;
+  padding: 10px;
+  margin: 10px;
+  height: 90%;
+  background-color: #ececec;
+}
+
+.btnContainer {
+  margin-top: 10px;
+}
+
+.buttonInverse {
+  color: #404040;
+  border: 1px solid #404040;
+  background: #ffffff;
+  margin-left: 10px;
+}
