@@ -1,113 +1,136 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled, { css } from "styled-components";
 
-export default class Draggable extends React.Component {
-  state = {
-    isDragging: false,
+const Draggable = ({ element, children, setCardConfig, index }) => {
+  const [originalX, setOriginalX] = useState(0);
+  const [originalY, setOriginalY] = useState(0);
+  const [translateX, setTranslateX] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
+  const [lastTranslateX, setLastTranslateX] = useState(
+    element?.translateX || 0
+  );
+  const [lastTranslateY, setLastTranslateY] = useState(
+    element?.translateY || 0
+  );
+  const [isDragging, setIsDragging] = useState(false);
 
-    originalX: 0,
-    originalY: 0,
-
-    translateX: 0,
-    translateY: 0,
-
-    lastTranslateX: this.props.element.translateX || 0,
-    lastTranslateY: this.props.element.translateY || 0
-  };
-
-  componentWillUnmount() {
-    window.removeEventListener("mousemove", this.handleMouseMove);
-    window.removeEventListener("mouseup", this.handleMouseUp);
-  }
-
-  handleMouseDown = (e) => {
-    window.addEventListener("mousemove", this.handleMouseMove);
-    window.addEventListener("mouseup", this.handleMouseUp);
-
+  const handleMouseDown = (e) => {
+    e.stopPropagation();
     const { clientX, clientY } = e;
 
-    this.setState({
-      originalX: clientX,
-      originalY: clientY,
-      isDragging: true
-    });
+    setOriginalX(clientX);
+    setOriginalY(clientY);
+    setIsDragging(true);
   };
 
-  handleMouseMove = (e) => {
-    const { isDragging } = this.state;
+  const handleMouseMove = useCallback(
+    (e) => {
+      e.stopPropagation();
+      if (!isDragging) {
+        return;
+      }
+      const { clientX, clientY } = e;
 
-    if (!isDragging) {
-      return;
+      const container = document.getElementsByClassName("drop-container")[0];
+      let elStyle = window.getComputedStyle(container);
+
+      const eloffsetLeft =
+        container.offsetLeft +
+        parseInt(e?.srcElement?.offsetWidth, 10) +
+        parseInt(elStyle.paddingLeft, 10);
+
+      const eloffsetTop =
+        container.offsetTop +
+        parseInt(e?.srcElement?.offsetHeight, 10) -
+        parseInt(elStyle.paddingTop, 10);
+
+      const eloffsetRight =
+        container.offsetLeft +
+        container.offsetWidth -
+        parseInt(e?.srcElement?.offsetWidth, 10) -
+        parseInt(elStyle.paddingRight, 10);
+
+      const eloffsetBottom =
+        container.offsetHeight +
+        container.offsetTop -
+        parseInt(e?.srcElement?.offsetHeight, 10) -
+        parseInt(elStyle.paddingBottom, 10);
+
+      if (
+        clientX > eloffsetLeft &&
+        clientX < eloffsetRight &&
+        clientY > eloffsetTop &&
+        clientY < eloffsetBottom
+      ) {
+        const translateX = clientX - originalX + lastTranslateX;
+        const translateY = clientY - originalY + lastTranslateY;
+        setTranslateX(translateX);
+        setTranslateY(translateY);
+
+        setCardConfig((x) => [
+          ...x.slice(0, index),
+          {
+            ...x[index],
+            translateX,
+            translateY
+          },
+          ...x.slice(index + 1)
+        ]);
+      }
+    },
+    [
+      isDragging,
+      originalX,
+      originalY,
+      lastTranslateX,
+      lastTranslateY,
+      setCardConfig,
+      index
+    ]
+  );
+
+  const handleMouseUp = useCallback(
+    (e) => {
+      e.stopPropagation();
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      setOriginalX(0);
+      setOriginalY(0);
+      setIsDragging(false);
+      setLastTranslateX(translateX);
+      setLastTranslateY(translateY);
+    },
+    [translateY, translateX, handleMouseMove]
+  );
+
+  useEffect(() => {
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
     }
-    const { clientX, clientY } = e;
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
-    const el = document.getElementsByClassName("drop-container")[0];
-    const eloffsetLeft = el.offsetLeft + 30;
-    const eloffsetTop = el.offsetTop + 30;
-    const eloffsetRight = el.offsetWidth + eloffsetLeft;
-    const eloffsetBottom = el.offsetHeight + eloffsetTop;
-
-    if (
-      clientX > eloffsetLeft &&
-      clientX < eloffsetRight &&
-      clientY > eloffsetTop &&
-      clientY < eloffsetBottom
-    ) {
-      const {
-        lastTranslateX,
-        originalX,
-        lastTranslateY,
-        originalY
-      } = this.state;
-      const { setCardConfig, index } = this.props;
-
-      const translateX = clientX - originalX + lastTranslateX;
-      const translateY = clientY - originalY + lastTranslateY;
-      this.setState({ translateX, translateY });
-      setCardConfig((x) => [
-        ...x.slice(0, index),
-        {
-          ...x[index],
-          translateX,
-          translateY
-        },
-        ...x.slice(index + 1)
-      ]);
-    }
-  };
-
-  handleMouseUp = () => {
-    window.removeEventListener("mousemove", this.handleMouseMove);
-    window.removeEventListener("mouseup", this.handleMouseUp);
-
-    this.setState({
-      originalX: 0,
-      originalY: 0,
-      lastTranslateX: this.state.translateX,
-      lastTranslateY: this.state.translateY,
-      isDragging: false
-    });
-  };
-
-  render() {
-    const { children } = this.props;
-    const { translateX, translateY, isDragging } = this.state;
-
-    return (
-      <Container
-        onMouseDown={this.handleMouseDown}
-        x={translateX}
-        y={translateY}
-        isDragging={isDragging}
-      >
-        {children}
-      </Container>
-    );
-  }
-}
+  return (
+    <Container
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      isDragging={isDragging}
+    >
+      {children}
+    </Container>
+  );
+};
 
 const Container = styled.div`
   cursor: grab;
+  position: absolute;
   display: inline-block;
   ${({ isDragging }) =>
     isDragging &&
@@ -116,3 +139,5 @@ const Container = styled.div`
       cursor: grabbing;
     `};
 `;
+
+export default Draggable;

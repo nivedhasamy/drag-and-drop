@@ -9,7 +9,6 @@ function renderer(config, i) {
       type: config?.type,
       className: config?.className,
       value: config?.value,
-      contentEditable: config?.contentEditable,
       rows: config?.rows,
       col: config?.col,
       style: {

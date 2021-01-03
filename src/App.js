@@ -3,48 +3,10 @@ import "./styles.css";
 import RenderCard from "./renderCard";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Draggable from "./draggable";
-
-const elements = {
-  Input: {
-    component: "input",
-    placeholder: "input placeholder",
-    type: "text"
-  },
-  Select: {
-    component: "select",
-    children: [
-      { component: "option", value: "val1", children: "value1" },
-      { component: "option", value: "val2", children: "value2" },
-      { component: "option", value: "val3", children: "value3" }
-    ]
-  },
-  "Text Area": {
-    component: "textarea",
-    placeholder: "textarea placeholder",
-    rows: "3",
-    cols: "60"
-  },
-  Paragraph: {
-    component: "p",
-    children: "Click and edit your custom text",
-    contentEditable: true
-  },
-  Heading: {
-    component: "h1",
-    children: "Header 1"
-  },
-  Button: {
-    component: "button",
-    children: "Click Me!"
-  }
-};
+import elements from "./elements";
 
 export default function App() {
   const [cardConfig, setCardConfig] = useState([]);
-
-  // useEffect(() => {
-  //   console.log({ cardConfig });
-  // }, [cardConfig]);
 
   useEffect(() => {
     setCardConfig(JSON.parse(localStorage.getItem("progress")) || []);
@@ -63,6 +25,7 @@ export default function App() {
 
   const onDrop = (e) => {
     let item = e.dataTransfer.getData("element");
+
     setCardConfig((x) => [...x, elements[item]]);
   };
 
@@ -90,7 +53,7 @@ export default function App() {
             onDrop={(e) => {
               onDrop(e);
             }}
-            className="drop-container droppable"
+            className="noselect drop-container droppable"
           >
             {cardConfig.map((config, i) => (
               <Draggable
